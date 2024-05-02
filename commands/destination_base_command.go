@@ -72,17 +72,16 @@ func (c *DestinationCommand) Dispose(name string) {
 }
 
 // GetDestinationContext get destination context
-func (c *DestinationCommand) GetDestinationContext(context Context) (DestinationContext, error) {
+func (c *DestinationCommand) GetDestinationContext(context Context) (models.DestinationAppResponse, error) {
 
 	// Context to return
-	var destinationContexts []DestinationContext
-	var destinationContext = DestinationContext{}
+	var destinationApps = models.DestinationAppResponse{}
 
 	// Get all services
 	log.Tracef("Getting list of services\n")
 	services, err := clients.GetServices(c.CliConnection)
 	if err != nil {
-		return destinationContext, errors.New("Could not get services: " + err.Error())
+		return destinationApps, errors.New("Could not get services: " + err.Error())
 	}
 
 	// Find destination service
@@ -95,7 +94,7 @@ func (c *DestinationCommand) GetDestinationContext(context Context) (Destination
 		}
 	}
 	if destinationServices == nil {
-		return destinationContext, fmt.Errorf("destination service is not in the list of available services." +
+		return destinationApps, fmt.Errorf("destination service is not in the list of available services." +
 			" Make sure your subaccount has entitlement to use it")
 	}
 
@@ -104,7 +103,7 @@ func (c *DestinationCommand) GetDestinationContext(context Context) (Destination
 		var liteServicePlan *models.CFServicePlan
 		destinationServicePlans, err := clients.GetServicePlans(c.CliConnection, destinationService.GUID)
 		if err != nil {
-			return destinationContext, fmt.Errorf("could not get service plans: %s", err.Error())
+			return destinationApps, fmt.Errorf("could not get service plans: %s", err.Error())
 		}
 		for _, servicePlan := range destinationServicePlans {
 			if servicePlan.Name == "lite" {
@@ -113,7 +112,7 @@ func (c *DestinationCommand) GetDestinationContext(context Context) (Destination
 			}
 		}
 		if liteServicePlan == nil {
-			return destinationContext, fmt.Errorf("destination service does not have a 'lite' plan")
+			return destinationApps, fmt.Errorf("destination service does not have a 'lite' plan")
 		}
 		var destinationContext = DestinationContext{}
 		destinationContext.DestinationServices = destinationServices
@@ -123,14 +122,14 @@ func (c *DestinationCommand) GetDestinationContext(context Context) (Destination
 		var destinationServiceInstances []models.CFServiceInstance
 		destinationServiceInstances, err = clients.GetServiceInstances(c.CliConnection, context.SpaceID, []models.CFServicePlan{*liteServicePlan})
 		if err != nil {
-			return destinationContext, fmt.Errorf("could not get service instances for 'lite' plan: %s", err.Error())
+			return destinationApps, fmt.Errorf("could not get service instances for 'lite' plan: %s", err.Error())
 		}
 		destinationContext.DestinationServiceInstances = destinationServiceInstances
 		for _, instance := range destinationServiceInstances {
 			// get service keys
 			destinationServiceInstanceKeys, err := clients.GetServiceKeys(c.CliConnection, instance.GUID)
 			if err != nil {
-				return destinationContext, fmt.Errorf("could not get service keys of %s service instance: %s",
+				return destinationApps, fmt.Errorf("could not get service keys of %s service instance: %s",
 					instance.Name,
 					err.Error())
 			}
@@ -138,7 +137,7 @@ func (c *DestinationCommand) GetDestinationContext(context Context) (Destination
 				log.Tracef("Creating service key for %s service instance\n", instance.Name)
 				destinationServiceInstanceKey, err := clients.CreateServiceKey(c.CliConnection, instance.GUID, nil)
 				if err != nil {
-					return destinationContext, fmt.Errorf("could not create service key of %s service instance: %s",
+					return destinationApps, fmt.Errorf("could not create service key of %s service instance: %s",
 						instance.Name,
 						err.Error())
 				}
@@ -151,18 +150,18 @@ func (c *DestinationCommand) GetDestinationContext(context Context) (Destination
 					destinationServiceInstanceKeys[len(destinationServiceInstanceKeys)-1].GUID)
 				destinationServiceInstanceKeyToken, err := clients.GetToken(destinationServiceInstanceKeys[len(destinationServiceInstanceKeys)-1].Credentials)
 				if err != nil {
-					return destinationContext, fmt.Errorf("could not obtain access token: %s", err.Error())
+					return destinationApps, fmt.Errorf("could not obtain access token: %s", err.Error())
 				}
 				//destinationContext.DestinationServiceInstanceKey = destinationServiceInstanceKeys[len(destinationServiceInstanceKeys)-1]
-				clients.ListDestinationDetails(*destinationServiceInstanceKeys[len(destinationServiceInstanceKeys)-1].Credentials.URI,
+				destinationApps, err = clients.ListDestinationDetails(*destinationServiceInstanceKeys[len(destinationServiceInstanceKeys)-1].Credentials.URI,
 					destinationServiceInstanceKeyToken, instance.GUID)
+				break
 			}
+
 		}
 
-		////APPEND TO ARRAY
-		destinationContexts = append(destinationContexts, destinationContext)
 	}
-
+	return destinationApps, nil
 	//log.Tracef("Destination services found: %+v\n", destinationContext.DestinationServices.)
 	//destinationContext.DestinationService = destinationService
 
@@ -222,7 +221,6 @@ func (c *DestinationCommand) GetDestinationContext(context Context) (Destination
 		log.Sensitive{Data: destinationServiceInstanceKeyToken})
 	destinationContext.DestinationServiceInstanceKeyToken = destinationServiceInstanceKeyToken*/
 
-	return destinationContext, nil
 }
 
 // CleanDestinationContext clean destination context

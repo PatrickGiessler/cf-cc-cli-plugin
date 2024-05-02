@@ -1,0 +1,44 @@
+[
+    {
+        "Description": "Connect A4H",
+        "Type": "HTTP",
+        "HTML5.DynamicDestination": "true",
+        "Authentication": "BasicAuthentication",
+        "WebIDEUsage": "odata_abap,dev_abap",
+        "Name": "A4H",
+        "WebIDEEnabled": "true",
+        "Password": "Htods70334",
+        "ProxyType": "OnPremise",
+        "URL": "http: //vhcalsapci:51000",
+        "sap-client": "001",
+        "User": "Developer"
+    },
+    {
+        "Description": "Connect A4H (Transport System) with PDF Service",
+        "Type": "HTTP",
+        "HTML5.DynamicDestination": "true",
+        "Authentication": "BasicAuthentication",
+        "WebIDEUsage": "odata_abap,dev_abap",
+        "Name": "FP_ICF_DATA_A4H",
+        "WebIDEEnabled": "true",
+        "Password": "1234asDF!!",
+        "ProxyType": "OnPremise",
+        "URL": "http://vhcalsapci:51000",
+        "sap-client": "001",
+        "User": "ADS_AGENT"
+    },
+    {
+        "Name": "dest-cf-dev-adobeforms-REST-srv",
+        "Type": "HTTP",
+        "URL": "https://adsrestapi-formsprocessing.cfapps.us10.hana.ondemand.com",
+        "Authentication": "OAuth2ClientCredentials",
+        "ProxyType": "Internet",
+        "tokenServiceURLType": "Dedicated",
+        "clientId": "sb-80d73357-4d05-44eb-a521-7960c210a722!b156976|ads-xsappname!b65488",
+        "Description": "Forms Service by Adobe CF",
+        "tokenServiceUser": "sb-80d73357-4d05-44eb-a521-7960c210a722!b156976|ads-xsappname!b65488",
+        "clientSecret": "280400d4-96ce-46f2-9357-ea452777f9b1$uaDCYPCKu3HE3fFBTIm8vO_BiX0m_Z7Je9lJd5g34kg=",
+        "tokenServiceURL": "https://svadev.authentication.us10.hana.ondemand.com/oauth/token",
+        "tokenServicePassword": "280400d4-96ce-46f2-9357-ea452777f9b1$uaDCYPCKu3HE3fFBTIm8vO_BiX0m_Z7Je9lJd5g34kg="
+    }
+]

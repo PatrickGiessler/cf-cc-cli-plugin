@@ -10,15 +10,15 @@ import (
 )
 
 // ListApplicationsForAppHost list HTML5 applications for app-host
-func ListDestinationDetails(serviceURL string, accessToken string, appHostGUID string) (models.HTML5ListApplicationsResponse, error) {
-	var html5Response models.HTML5ListApplicationsResponse
+func ListDestinationDetails(serviceURL string, accessToken string, appHostGUID string) (models.DestinationAppResponse, error) {
+	var html5Response models.DestinationAppResponse
 	var request *http.Request
 	var response *http.Response
 	var err error
 	var html5URL string
 	var body []byte
 
-	html5URL = serviceURL + "/destination-configuration/v1"
+	html5URL = serviceURL + "/destination-configuration/v1/subaccountDestinations"
 
 	log.Tracef("Making request to: %s\n", html5URL)
 

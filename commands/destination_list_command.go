@@ -68,7 +68,7 @@ func (c *DestinationCommand) ListApps(appHostGUID *string) ExecutionStatus {
 		appHostMessage = " with app-host-id " + terminal.EntityNameColor(*appHostGUID)
 	}
 
-	ui.Say("Getting list of HTML5 applications%s in org %s / space %s as %s...",
+	ui.Say("Getting list of Destinations applications%s in org %s / space %s as %s...",
 		appHostMessage,
 		terminal.EntityNameColor(context.Org),
 		terminal.EntityNameColor(context.Space),
@@ -86,79 +86,21 @@ func (c *DestinationCommand) ListApps(appHostGUID *string) ExecutionStatus {
 	var appHostServicePlan *models.CFServicePlan
 	_ = appHostServicePlan
 
-	/*	for _, plan := range html5Context.HTML5AppsRepoServicePlans {
-			if plan.Name == "app-host" {
-				appHostServicePlan = &plan
-				break
-			}
+	ui.Ok()
+	ui.Say("")
+	var onPremiseApps []models.DestinationApp
+	for _, service := range destinationContext {
+		if service.ProxyType == "OnPremise" {
+			onPremiseApps = append(onPremiseApps, service)
 		}
-		if appHostServicePlan == nil {
-			ui.Failed("Could not find app-host service plan")
-			return Failure
-		}
+	}
 
-		var appHostServiceInstances []models.CFServiceInstance
-		if appHostGUID == nil {
-			// Get list of service instances of app-host plan
-			log.Tracef("Getting service instances of %s service app-host plan (%+v)\n", html5Context.ServiceName, appHostServicePlan)
-			appHostServiceInstances, err = clients.GetServiceInstances(c.CliConnection, context.SpaceID, []models.CFServicePlan{*appHostServicePlan})
-			if err != nil {
-				ui.Failed("Could not get service instances for app-host plan: %+v", err)
-				return Failure
-			}
-		} else {
-			// Use service instance with provided app-host-id
-			appHostServiceInstances = []models.CFServiceInstance{
-				{
-					GUID: *appHostGUID,
-					Name: "-",
-					LastOperation: models.CFLastOperation{
-						State:       "-",
-						Type:        "-",
-						Description: "-",
-						UpdatedAt:   "-",
-						CreatedAt:   "-",
-					},
-					UpdatedAt: "-",
-				},
-			}
-		}
-
-		// Get list of applications for each app-host service instance
-		var data Model
-		data.Services = make([]Service, 0)
-		for _, serviceInstance := range appHostServiceInstances {
-			log.Tracef("Getting list of applications for app-host plan (%+v)\n", serviceInstance)
-			applications, err := clients.ListApplicationsForAppHost(*html5Context.HTML5AppRuntimeServiceInstanceKeys[len(html5Context.HTML5AppRuntimeServiceInstanceKeys)-1].Credentials.URI,
-				html5Context.HTML5AppRuntimeServiceInstanceKeyToken, serviceInstance.GUID)
-			if err != nil {
-				ui.Failed("Could not get list of applications for app-host instance %s: %+v", serviceInstance.Name, err)
-				return Failure
-			}
-			apps := make([]App, 0)
-			for _, app := range applications {
-				apps = append(apps, App{Name: app.ApplicationName, Version: app.ApplicationVersion, Changed: app.ChangedOn, Public: app.IsPublic})
-			}
-			data.Services = append(data.Services, Service{Name: serviceInstance.Name, GUID: serviceInstance.GUID, UpdatedAt: serviceInstance.UpdatedAt, Apps: apps})
-		}
-
-		// Clean-up HTML5 context
-
-		ui.Ok()
-		ui.Say("")
-
-		// Display information about HTML5 applications
-		table := ui.Table([]string{"name", "version", "app-host-id", "service instance", "visibility", "last changed"})
-		for _, service := range data.Services {
-			if len(service.Apps) == 0 {
-				table.Add("-", "-", service.GUID, service.Name, "-", service.UpdatedAt)
-			} else {
-				for _, app := range service.Apps {
-					table.Add(app.Name, app.Version, service.GUID, service.Name, (map[bool]string{true: "public", false: "private"})[app.Public], app.Changed)
-				}
-			}
-		}
-		table.Print()*/
+	// Display information about HTML5 applications
+	table := ui.Table([]string{"name", "description", "type", "URL"})
+	for _, service := range onPremiseApps {
+		table.Add(service.Name, service.Description, service.ProxyType, service.URL)
+	}
+	table.Print()
 
 	return Success
 }
