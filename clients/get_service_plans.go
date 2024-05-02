@@ -1,9 +1,9 @@
 package clients
 
 import (
-	"cf-html5-apps-repo-cli-plugin/cache"
-	models "cf-html5-apps-repo-cli-plugin/clients/models"
-	"cf-html5-apps-repo-cli-plugin/log"
+	"cf-cloud-connector/cache"
+	models "cf-cloud-connector/clients/models"
+	"cf-cloud-connector/log"
 	"encoding/json"
 	"strings"
 

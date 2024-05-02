@@ -1,10 +1,10 @@
 package commands
 
 import (
-	"cf-html5-apps-repo-cli-plugin/cache"
-	clients "cf-html5-apps-repo-cli-plugin/clients"
-	"cf-html5-apps-repo-cli-plugin/clients/models"
-	"cf-html5-apps-repo-cli-plugin/log"
+	"cf-cloud-connector/cache"
+	clients "cf-cloud-connector/clients"
+	"cf-cloud-connector/clients/models"
+	"cf-cloud-connector/log"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -75,120 +75,6 @@ func (c *HTML5Command) Dispose(name string) {
 	}
 }
 
-// GetDestinationContext get destination context
-func (c *HTML5Command) GetDestinationContext(context Context, destinationInstanceName string) (DestinationContext, error) {
-
-	// Context to return
-	var destinationContext = DestinationContext{}
-
-	// Get all services
-	log.Tracef("Getting list of services\n")
-	services, err := clients.GetServices(c.CliConnection)
-	if err != nil {
-		return destinationContext, errors.New("Could not get services: " + err.Error())
-	}
-
-	// Find destination service
-	log.Tracef("Looking for 'destination' service\n")
-	var destinationService *models.CFService
-	for _, service := range services {
-		if service.Name == "destination" {
-			destinationService = &service
-			break
-		}
-	}
-	if destinationService == nil {
-		return destinationContext, fmt.Errorf("Destination service is not in the list of available services." +
-			" Make sure your subaccount has entitlement to use it")
-	}
-	log.Tracef("Destination service found: %+v\n", destinationService)
-	destinationContext.DestinationService = destinationService
-
-	// Find destination service "lite" plan
-	log.Tracef("Getting service plans for 'destination' service (GUID: %s)\n", destinationService.GUID)
-	var liteServicePlan *models.CFServicePlan
-	destinationServicePlans, err := clients.GetServicePlans(c.CliConnection, destinationService.GUID)
-	if err != nil {
-		return destinationContext, fmt.Errorf("Could not get service plans: %s", err.Error())
-	}
-	for _, servicePlan := range destinationServicePlans {
-		if servicePlan.Name == "lite" {
-			liteServicePlan = &servicePlan
-			break
-		}
-	}
-	if liteServicePlan == nil {
-		return destinationContext, fmt.Errorf("Destination service does not have a 'lite' plan")
-	}
-	log.Tracef("Destination service 'lite' plan found: %+v\n", liteServicePlan)
-	destinationContext.DestinationServicePlan = liteServicePlan
-
-	// Get list of service instances of 'lite' plan
-	log.Tracef("Getting service instances of 'destination' service 'lite' plan (%+v)\n", liteServicePlan)
-	var destinationServiceInstances []models.CFServiceInstance
-	destinationServiceInstances, err = clients.GetServiceInstances(c.CliConnection, context.SpaceID, []models.CFServicePlan{*liteServicePlan})
-	if err != nil {
-		return destinationContext, fmt.Errorf("Could not get service instances for 'lite' plan: %s", err.Error())
-	}
-	destinationContext.DestinationServiceInstances = destinationServiceInstances
-
-	// Sort destination service instance so that the requested instance to be the first one in the list.
-	// If specific destinaton service instance name is required, but not found - return error
-	if destinationInstanceName != "" {
-		found := false
-		for idx, instance := range destinationServiceInstances {
-			if instance.Name == destinationInstanceName {
-				tmp := destinationServiceInstances[0]
-				destinationServiceInstances[0] = instance
-				destinationServiceInstances[idx] = tmp
-				found = true
-				break
-			}
-		}
-		if !found {
-			return destinationContext, fmt.Errorf("Could not find service instance of 'destination' service 'lite' plan with name '%s'", destinationInstanceName)
-		}
-	}
-
-	// Create instance of 'lite' plan if needed
-	if len(destinationServiceInstances) == 0 {
-		log.Tracef("Creating service instance of 'destination' service 'lite' plan\n")
-		destinationServiceInstance, err := clients.CreateServiceInstance(c.CliConnection, context.SpaceID, *liteServicePlan, nil, "")
-		if err != nil {
-			return destinationContext, fmt.Errorf("Could not create service instance of 'destination' service 'lite' plan: %s", err.Error())
-		}
-		destinationServiceInstances = append(destinationServiceInstances, *destinationServiceInstance)
-		destinationContext.DestinationServiceInstance = destinationServiceInstance
-	} else {
-		log.Tracef("Using service instance of 'destination' service 'lite' plan: %+v\n", destinationServiceInstances[0])
-	}
-
-	// TODO: chech if there is an existing service key and use it, if found
-
-	// Create service key
-	log.Tracef("Creating service key for 'destination' service 'lite' plan\n")
-	destinationServiceInstanceKey, err := clients.CreateServiceKey(c.CliConnection, destinationServiceInstances[0].GUID, nil)
-	if err != nil {
-		return destinationContext, fmt.Errorf("Could not create service key of %s service instance: %s",
-			destinationServiceInstances[0].Name,
-			err.Error())
-	}
-	destinationContext.DestinationServiceInstanceKey = destinationServiceInstanceKey
-
-	// Get destination service lite plan key access token
-	log.Tracef("Getting token for service key %s\n", destinationServiceInstanceKey.Name)
-	destinationServiceInstanceKeyToken, err := clients.GetToken(destinationServiceInstanceKey.Credentials)
-	if err != nil {
-		return destinationContext, fmt.Errorf("Could not obtain access token: %s", err.Error())
-	}
-	log.Tracef("Access token for service key %s: %s\n",
-		destinationServiceInstanceKey.Name,
-		log.Sensitive{Data: destinationServiceInstanceKeyToken})
-	destinationContext.DestinationServiceInstanceKeyToken = destinationServiceInstanceKeyToken
-
-	return destinationContext, nil
-}
-
 // CleanDestinationContext clean destination context
 func (c *HTML5Command) CleanDestinationContext(destinationContext DestinationContext) error {
 	var err error
@@ -254,6 +140,43 @@ func (c *HTML5Command) GetHTML5Context(context Context) (HTML5Context, error) {
 			break
 		}
 	}
+
+	//hhhahhahaha
+	var conService *models.CFService
+	for _, service := range services {
+		if service.Name == "destination" {
+			conService = &service
+		}
+	}
+	servicePlans_con, err := clients.GetServicePlans(c.CliConnection, conService.GUID)
+	_ = servicePlans_con
+	_ = err
+	var appa, err2 = clients.GetServiceInstances(c.CliConnection, context.SpaceID, servicePlans_con)
+	//log.Tracef(err.Error())
+	_ = appa
+	_ = err2
+
+	var destService *models.CFService
+	for _, service := range services {
+		if service.Name == "connectivity" {
+			destService = &service
+			break
+		}
+	}
+	_ = destService
+
+	destService_con, err := clients.GetServicePlans(c.CliConnection, destService.GUID)
+	_ = destService_con
+
+	var appa2, err3 = clients.GetServiceInstances(c.CliConnection, context.SpaceID, destService_con)
+	//log.Tracef(err.Error())
+	_ = appa2
+	_ = err3
+
+	if err != nil {
+		return html5Context, errors.New("Could not get service instances for app-runtime plan: " + err.Error())
+	}
+
 	if html5AppsRepoService == nil {
 		return html5Context, errors.New(serviceName + " service is not in the list of available services")
 	}

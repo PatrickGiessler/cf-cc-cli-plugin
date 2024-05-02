@@ -2,7 +2,7 @@ package clients
 
 import (
 	"bytes"
-	"cf-html5-apps-repo-cli-plugin/log"
+	"cf-cloud-connector/log"
 	"fmt"
 	"io"
 	"net/http"

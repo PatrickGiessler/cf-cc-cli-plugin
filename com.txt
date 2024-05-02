@@ -1,0 +1,5 @@
+cf login -a https://api.cf.us10-001.hana.ondemand.com/ --origin awnznylnk-platform -u patrick.giessler@sva.de -p ZAEwhei58SZy9nk
+
+go build
+
+cf install-plugin .\cf-cloud-connector.exe -f

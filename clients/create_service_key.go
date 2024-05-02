@@ -2,8 +2,8 @@ package clients
 
 import (
 	"bytes"
-	models "cf-html5-apps-repo-cli-plugin/clients/models"
-	"cf-html5-apps-repo-cli-plugin/log"
+	models "cf-cloud-connector/clients/models"
+	"cf-cloud-connector/log"
 	"encoding/json"
 	"fmt"
 	"io"

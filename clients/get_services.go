@@ -1,9 +1,9 @@
 package clients
 
 import (
-	"cf-html5-apps-repo-cli-plugin/cache"
-	models "cf-html5-apps-repo-cli-plugin/clients/models"
-	"cf-html5-apps-repo-cli-plugin/log"
+	"cf-cloud-connector/cache"
+	models "cf-cloud-connector/clients/models"
+	"cf-cloud-connector/log"
 	"encoding/json"
 	"strings"
 
@@ -75,6 +75,9 @@ func GetServices(cliConnection plugin.CliConnection) ([]models.CFService, error)
 			}
 		}
 	}
+
+	//TODO: Add error handling
+	//testurl := "/v3/service_offerings?space_guids=" + space.Guid
 
 	log.Tracef("Updating cache with %d service offerings\n", len(services))
 	cache.Set("GetServices:"+space.Guid, services)

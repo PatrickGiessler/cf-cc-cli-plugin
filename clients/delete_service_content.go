@@ -1,7 +1,7 @@
 package clients
 
 import (
-	"cf-html5-apps-repo-cli-plugin/log"
+	"cf-cloud-connector/log"
 	"errors"
 	"io"
 	"net/http"
