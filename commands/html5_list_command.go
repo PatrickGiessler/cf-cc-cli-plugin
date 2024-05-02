@@ -22,7 +22,7 @@ type ListCommand struct {
 // GetPluginCommand returns the plugin command details
 func (c *ListCommand) GetPluginCommand() plugin.Command {
 	return plugin.Command{
-		Name:     "cloud-connector-list",
+		Name:     "cloud-connector-list-HTML",
 		HelpText: "Display list of HTML5 applications or file paths of specified application",
 		UsageDetails: plugin.Usage{
 			Usage: "cf html5-list [APP_NAME] [APP_VERSION] [APP_HOST_ID|-n APP_HOST_NAME] [-d|-di DESTINATION_SERVICE_INSTANCE_NAME|-a CF_APP_NAME [-rt RUNTIME] [-u]]",

@@ -55,7 +55,7 @@ func GetJobByUrl(cliConnection plugin.CliConnection, url string) (models.CFJob, 
 
 	// Failed to get job
 	if response.StatusCode != 200 {
-		return job, fmt.Errorf("Failed to get job by URL '%s': [%d] %+v", url, response.StatusCode, body)
+		return job, fmt.Errorf("failed to get job by URL '%s': [%d] %+v", url, response.StatusCode, body)
 	}
 
 	// Unmarshal JSON

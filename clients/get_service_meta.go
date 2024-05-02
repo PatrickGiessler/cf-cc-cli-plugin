@@ -16,9 +16,7 @@ func GetServiceMeta(serviceURL string, accessToken string, resultChannel chan<- 
 	var response *http.Response
 	var body []byte
 	var err error
-	var html5URL string
-
-	html5URL = serviceURL + "/app-host/metadata"
+	html5URL := serviceURL + "/app-host/metadata"
 
 	log.Tracef("Making request to: %s\n", html5URL)
 

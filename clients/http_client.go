@@ -50,7 +50,7 @@ func GetClient(trustInsecure bool, customCAPath string) (client *http.Client, er
 	// Get system certificates pool
 	rootCAs, err := x509.SystemCertPool()
 	if err != nil {
-		return client, fmt.Errorf("reading system certificates failed: %s\n", err.Error())
+		return client, fmt.Errorf("reading system certificates failed: %s", err.Error())
 	}
 
 	// Initialize root CAs pool as empty, if no system CAs available
@@ -61,12 +61,12 @@ func GetClient(trustInsecure bool, customCAPath string) (client *http.Client, er
 	// Read local cert file
 	certs, err := os.ReadFile(customCAPath)
 	if err != nil {
-		return client, fmt.Errorf("failed to append %q to RootCAs: %s\n", customCAPath, err.Error())
+		return client, fmt.Errorf("failed to append %q to RootCAs: %s", customCAPath, err.Error())
 	}
 
 	// Append custom CA to pool
 	if ok := rootCAs.AppendCertsFromPEM(certs); !ok {
-		return client, fmt.Errorf("no certs appended, using system certs only\n")
+		return client, fmt.Errorf("no certs appended, using system certs only")
 	}
 
 	// Trust additional certificate

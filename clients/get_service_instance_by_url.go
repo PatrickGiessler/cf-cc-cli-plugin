@@ -53,7 +53,7 @@ func GetServiceInstanceByUrl(cliConnection plugin.CliConnection, url string) (mo
 
 	// Failed to get service instance
 	if response.StatusCode != 200 {
-		return serviceInstance, fmt.Errorf("Failed to get service instance by URL '%s': [%d] %+v", url, response.StatusCode, body)
+		return serviceInstance, fmt.Errorf("failed to get service instance by URL '%s': [%d] %+v", url, response.StatusCode, body)
 	}
 
 	// Unmarshal JSON

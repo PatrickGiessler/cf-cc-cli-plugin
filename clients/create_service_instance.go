@@ -80,7 +80,7 @@ func CreateServiceInstance(cliConnection plugin.CliConnection, spaceGUID string,
 	}
 
 	if response.StatusCode != 202 {
-		return nil, fmt.Errorf("Could not create service instance: [%d] %s", response.StatusCode, string(body[:]))
+		return nil, fmt.Errorf("could not create service instance: [%d] %s", response.StatusCode, string(body[:]))
 	}
 
 	// Pool job
@@ -91,7 +91,7 @@ func CreateServiceInstance(cliConnection plugin.CliConnection, spaceGUID string,
 
 	// Get link to service instance from job
 	if link, ok = job.Links["service_instances"]; !ok {
-		return nil, fmt.Errorf("Malformed job resource. No 'service_instances' link")
+		return nil, fmt.Errorf("malformed job resource. No 'service_instances' link")
 	}
 
 	// Get service instance

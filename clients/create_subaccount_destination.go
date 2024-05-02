@@ -53,7 +53,7 @@ func CreateSubaccountDestination(serviceURL string, accessToken string, destinat
 	if response.StatusCode > 201 {
 		body, err = io.ReadAll(response.Body)
 		if err != nil {
-			return fmt.Errorf("Could not create destination: [%s] %+v", response.Status, body)
+			return fmt.Errorf("could not create destination: [%s] %+v", response.Status, body)
 		}
 	}
 

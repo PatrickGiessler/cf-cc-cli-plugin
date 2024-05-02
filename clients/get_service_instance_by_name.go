@@ -53,7 +53,7 @@ func GetServiceInstanceByName(cliConnection plugin.CliConnection, spaceGUID stri
 	}
 
 	if len(serviceInstances) == 0 {
-		return models.CFServiceInstance{}, fmt.Errorf("Service instance with name '%s' not found", serviceInstanceName)
+		return models.CFServiceInstance{}, fmt.Errorf("service instance with name '%s' not found", serviceInstanceName)
 	}
 
 	return serviceInstances[0], nil

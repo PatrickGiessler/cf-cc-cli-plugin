@@ -61,7 +61,7 @@ func GetServiceInstancesByNamePrefix(cliConnection plugin.CliConnection, spaceGU
 	}
 
 	if len(serviceInstances) == 0 {
-		return serviceInstances, fmt.Errorf("Service instances with name prefix '%s' not found", serviceInstancesNamePrefix)
+		return serviceInstances, fmt.Errorf("service instances with name prefix '%s' not found", serviceInstancesNamePrefix)
 	}
 
 	return serviceInstances, nil

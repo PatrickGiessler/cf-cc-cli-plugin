@@ -19,6 +19,20 @@ import (
 type DestinationCommand struct {
 	BaseCommand
 }
+type DestinationContext struct {
+	// Pointer to destination service
+	DestinationServices []models.CFService
+	// Pointer to 'lite' plan of destination service
+	DestinationServicePlan *models.CFServicePlan
+	// List of destination service instances
+	DestinationServiceInstances []models.CFServiceInstance
+	// Pointer to destination service instance created during context initialization
+	DestinationServiceInstance *models.CFServiceInstance
+	// Pointer to destination service key created during context initialization
+	DestinationServiceInstanceKey *models.CFServiceKey
+	// Access token of destination service key
+	DestinationServiceInstanceKeyToken string
+}
 
 // Initialize initializes the command with the specified name and CLI connection
 func (c *DestinationCommand) Initialize(name string, cliConnection plugin.CliConnection) (err error) {
@@ -41,32 +55,27 @@ func (c *DestinationCommand) Initialize(name string, cliConnection plugin.CliCon
 	if customCAPath != "" {
 		if _, err := os.Stat(customCAPath); err != nil {
 			log.Tracef("Failed to read file with additional root CAs: %s\n", err.Error())
-			return fmt.Errorf("Certificate file %q is not accessible. Please check 'SSL_CERT_FILE' or 'SSL_CERT_DIR' environment variable is pointing to existing file or directory", customCAPath)
+			return fmt.Errorf("certificate file %q is not accessible. Please check 'SSL_CERT_FILE' or 'SSL_CERT_DIR' environment variable is pointing to existing file or directory", customCAPath)
 		}
 	}
 	clients.SetCustomCAPath(customCAPath)
 
 	// Cache
-	if os.Getenv("HTML5_CACHE") == "1" {
-		return loadCache()
-	} else {
-		return clearCache()
-	}
+	return nil
 }
 
 // Dispose disposes command and saves cache if needed
 func (c *DestinationCommand) Dispose(name string) {
 	log.Tracef("Disposing command '%s'\n", name)
 	c.DisposeBase(name)
-	if os.Getenv("HTML5_CACHE") == "1" {
-		saveCache()
-	}
+
 }
 
 // GetDestinationContext get destination context
-func (c *DestinationCommand) GetDestinationContext(context Context, destinationInstanceName string) (DestinationContext, error) {
+func (c *DestinationCommand) GetDestinationContext(context Context) (DestinationContext, error) {
 
 	// Context to return
+	var destinationContexts []DestinationContext
 	var destinationContext = DestinationContext{}
 
 	// Get all services
@@ -78,51 +87,90 @@ func (c *DestinationCommand) GetDestinationContext(context Context, destinationI
 
 	// Find destination service
 	log.Tracef("Looking for 'destination' service\n")
-	var destinationService *models.CFService
+	var destinationServices []models.CFService
 	for _, service := range services {
 		if service.Name == "destination" {
-			destinationService = &service
-			break
+			destinationServices = append(destinationServices, service)
+
 		}
 	}
-	if destinationService == nil {
-		return destinationContext, fmt.Errorf("Destination service is not in the list of available services." +
+	if destinationServices == nil {
+		return destinationContext, fmt.Errorf("destination service is not in the list of available services." +
 			" Make sure your subaccount has entitlement to use it")
 	}
-	log.Tracef("Destination service found: %+v\n", destinationService)
-	destinationContext.DestinationService = destinationService
 
-	// Find destination service "lite" plan
-	log.Tracef("Getting service plans for 'destination' service (GUID: %s)\n", destinationService.GUID)
-	var liteServicePlan *models.CFServicePlan
-	destinationServicePlans, err := clients.GetServicePlans(c.CliConnection, destinationService.GUID)
-	if err != nil {
-		return destinationContext, fmt.Errorf("Could not get service plans: %s", err.Error())
-	}
-	for _, servicePlan := range destinationServicePlans {
-		if servicePlan.Name == "lite" {
-			liteServicePlan = &servicePlan
-			break
+	for _, destinationService := range destinationServices {
+		log.Tracef("Getting service plans for 'destination' service (GUID: %s)\n", destinationService.GUID)
+		var liteServicePlan *models.CFServicePlan
+		destinationServicePlans, err := clients.GetServicePlans(c.CliConnection, destinationService.GUID)
+		if err != nil {
+			return destinationContext, fmt.Errorf("could not get service plans: %s", err.Error())
 		}
+		for _, servicePlan := range destinationServicePlans {
+			if servicePlan.Name == "lite" {
+				liteServicePlan = &servicePlan
+				break
+			}
+		}
+		if liteServicePlan == nil {
+			return destinationContext, fmt.Errorf("destination service does not have a 'lite' plan")
+		}
+		var destinationContext = DestinationContext{}
+		destinationContext.DestinationServices = destinationServices
+		destinationContext.DestinationServicePlan = liteServicePlan
+
+		log.Tracef("Getting service instances of 'destination' service 'lite' plan (%+v)\n", liteServicePlan)
+		var destinationServiceInstances []models.CFServiceInstance
+		destinationServiceInstances, err = clients.GetServiceInstances(c.CliConnection, context.SpaceID, []models.CFServicePlan{*liteServicePlan})
+		if err != nil {
+			return destinationContext, fmt.Errorf("could not get service instances for 'lite' plan: %s", err.Error())
+		}
+		destinationContext.DestinationServiceInstances = destinationServiceInstances
+		for _, instance := range destinationServiceInstances {
+			// get service keys
+			destinationServiceInstanceKeys, err := clients.GetServiceKeys(c.CliConnection, instance.GUID)
+			if err != nil {
+				return destinationContext, fmt.Errorf("could not get service keys of %s service instance: %s",
+					instance.Name,
+					err.Error())
+			}
+			if len(destinationServiceInstanceKeys) == 0 {
+				log.Tracef("Creating service key for %s service instance\n", instance.Name)
+				destinationServiceInstanceKey, err := clients.CreateServiceKey(c.CliConnection, instance.GUID, nil)
+				if err != nil {
+					return destinationContext, fmt.Errorf("could not create service key of %s service instance: %s",
+						instance.Name,
+						err.Error())
+				}
+				destinationServiceInstanceKeys = append(destinationServiceInstanceKeys, *destinationServiceInstanceKey)
+			}
+			if len(destinationServiceInstanceKeys) > 0 {
+				log.Tracef("Found %d service keys for service %s, using service key with GUID=%s\n",
+					len(destinationServiceInstanceKeys),
+					instance.Name,
+					destinationServiceInstanceKeys[len(destinationServiceInstanceKeys)-1].GUID)
+				destinationServiceInstanceKeyToken, err := clients.GetToken(destinationServiceInstanceKeys[len(destinationServiceInstanceKeys)-1].Credentials)
+				if err != nil {
+					return destinationContext, fmt.Errorf("could not obtain access token: %s", err.Error())
+				}
+				//destinationContext.DestinationServiceInstanceKey = destinationServiceInstanceKeys[len(destinationServiceInstanceKeys)-1]
+				clients.ListDestinationDetails(*destinationServiceInstanceKeys[len(destinationServiceInstanceKeys)-1].Credentials.URI,
+					destinationServiceInstanceKeyToken, instance.GUID)
+			}
+		}
+
+		////APPEND TO ARRAY
+		destinationContexts = append(destinationContexts, destinationContext)
 	}
-	if liteServicePlan == nil {
-		return destinationContext, fmt.Errorf("Destination service does not have a 'lite' plan")
-	}
-	log.Tracef("Destination service 'lite' plan found: %+v\n", liteServicePlan)
-	destinationContext.DestinationServicePlan = liteServicePlan
+
+	//log.Tracef("Destination services found: %+v\n", destinationContext.DestinationServices.)
+	//destinationContext.DestinationService = destinationService
 
 	// Get list of service instances of 'lite' plan
-	log.Tracef("Getting service instances of 'destination' service 'lite' plan (%+v)\n", liteServicePlan)
-	var destinationServiceInstances []models.CFServiceInstance
-	destinationServiceInstances, err = clients.GetServiceInstances(c.CliConnection, context.SpaceID, []models.CFServicePlan{*liteServicePlan})
-	if err != nil {
-		return destinationContext, fmt.Errorf("Could not get service instances for 'lite' plan: %s", err.Error())
-	}
-	destinationContext.DestinationServiceInstances = destinationServiceInstances
 
 	// Sort destination service instance so that the requested instance to be the first one in the list.
 	// If specific destinaton service instance name is required, but not found - return error
-	if destinationInstanceName != "" {
+	/*if destinationInstanceName != "" {
 		found := false
 		for idx, instance := range destinationServiceInstances {
 			if instance.Name == destinationInstanceName {
@@ -136,10 +184,10 @@ func (c *DestinationCommand) GetDestinationContext(context Context, destinationI
 		if !found {
 			return destinationContext, fmt.Errorf("Could not find service instance of 'destination' service 'lite' plan with name '%s'", destinationInstanceName)
 		}
-	}
+	}*/
 
 	// Create instance of 'lite' plan if needed
-	if len(destinationServiceInstances) == 0 {
+	/*if len(destinationServiceInstances) == 0 {
 		log.Tracef("Creating service instance of 'destination' service 'lite' plan\n")
 		destinationServiceInstance, err := clients.CreateServiceInstance(c.CliConnection, context.SpaceID, *liteServicePlan, nil, "")
 		if err != nil {
@@ -149,12 +197,12 @@ func (c *DestinationCommand) GetDestinationContext(context Context, destinationI
 		destinationContext.DestinationServiceInstance = destinationServiceInstance
 	} else {
 		log.Tracef("Using service instance of 'destination' service 'lite' plan: %+v\n", destinationServiceInstances[0])
-	}
+	}*/
 
 	// TODO: chech if there is an existing service key and use it, if found
 
 	// Create service key
-	log.Tracef("Creating service key for 'destination' service 'lite' plan\n")
+	/*log.Tracef("Creating service key for 'destination' service 'lite' plan\n")
 	destinationServiceInstanceKey, err := clients.CreateServiceKey(c.CliConnection, destinationServiceInstances[0].GUID, nil)
 	if err != nil {
 		return destinationContext, fmt.Errorf("Could not create service key of %s service instance: %s",
@@ -172,7 +220,7 @@ func (c *DestinationCommand) GetDestinationContext(context Context, destinationI
 	log.Tracef("Access token for service key %s: %s\n",
 		destinationServiceInstanceKey.Name,
 		log.Sensitive{Data: destinationServiceInstanceKeyToken})
-	destinationContext.DestinationServiceInstanceKeyToken = destinationServiceInstanceKeyToken
+	destinationContext.DestinationServiceInstanceKeyToken = destinationServiceInstanceKeyToken*/
 
 	return destinationContext, nil
 }
@@ -302,7 +350,7 @@ func (c *DestinationCommand) GetHTML5Context(context Context) (HTML5Context, err
 		}
 	}
 	if appRuntimeServicePlan == nil {
-		return html5Context, errors.New("Could not find app-runtime service plan")
+		return html5Context, errors.New("could not find app-runtime service plan")
 	}
 	html5Context.HTML5AppRuntimeServicePlan = appRuntimeServicePlan
 

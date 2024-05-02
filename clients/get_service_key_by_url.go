@@ -53,7 +53,7 @@ func GetServiceKeyByUrl(cliConnection plugin.CliConnection, url string) (models.
 
 	// Failed to get service key
 	if response.StatusCode != 200 {
-		return serviceKey, fmt.Errorf("Failed to get service key by URL '%s': [%d] %+v", url, response.StatusCode, body)
+		return serviceKey, fmt.Errorf("failed to get service key by URL '%s': [%d] %+v", url, response.StatusCode, body)
 	}
 
 	// Unmarshal JSON

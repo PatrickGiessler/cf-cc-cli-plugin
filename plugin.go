@@ -28,6 +28,7 @@ type HTML5Plugin struct{}
 // Commands contains the commands supported by this plugin
 var Commands = []commands.Command{
 	&commands.ListCommand{},
+	&commands.DestinationListCommand{},
 }
 
 // Run runs this plugin

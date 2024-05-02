@@ -28,7 +28,7 @@ func PollJob(cliConnection plugin.CliConnection, url string) (models.CFJob, erro
 			if len(job.Errors) > 0 {
 				return job, fmt.Errorf("%d %s %s", job.Errors[0].Code, job.Errors[0].Title, job.Errors[0].Detail)
 			}
-			return job, fmt.Errorf("Job failed. Job GUID: %s", job.GUID)
+			return job, fmt.Errorf("job failed. Job GUID: %s", job.GUID)
 		}
 		if job.State == "COMPLETE" {
 			break
@@ -36,7 +36,7 @@ func PollJob(cliConnection plugin.CliConnection, url string) (models.CFJob, erro
 	}
 
 	if job.State != "COMPLETE" {
-		return job, fmt.Errorf("Job polling failed. After %d attempts job did't reach final state: %+v", MAX_ATTEMPTS, job)
+		return job, fmt.Errorf("job polling failed. After %d attempts job did't reach final state: %+v", MAX_ATTEMPTS, job)
 	}
 
 	return job, nil

@@ -62,7 +62,7 @@ func DeleteServiceKey(cliConnection plugin.CliConnection, serviceKeyGUID string,
 			if currentTry != maxRetryCount {
 				continue
 			}
-			return fmt.Errorf("Could not delete service key: [%d] %s", response.StatusCode, string(body[:]))
+			return fmt.Errorf("could not delete service key: [%d] %s", response.StatusCode, string(body[:]))
 		} else {
 			// Pool job
 			_, err = PollJob(cliConnection, response.Header.Get("Location"))

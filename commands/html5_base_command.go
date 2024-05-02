@@ -53,7 +53,7 @@ func (c *HTML5Command) Initialize(name string, cliConnection plugin.CliConnectio
 	if customCAPath != "" {
 		if _, err := os.Stat(customCAPath); err != nil {
 			log.Tracef("Failed to read file with additional root CAs: %s\n", err.Error())
-			return fmt.Errorf("Certificate file %q is not accessible. Please check 'SSL_CERT_FILE' or 'SSL_CERT_DIR' environment variable is pointing to existing file or directory", customCAPath)
+			return fmt.Errorf("certificate file %q is not accessible. Please check 'SSL_CERT_FILE' or 'SSL_CERT_DIR' environment variable is pointing to existing file or directory", customCAPath)
 		}
 	}
 	clients.SetCustomCAPath(customCAPath)
@@ -141,42 +141,6 @@ func (c *HTML5Command) GetHTML5Context(context Context) (HTML5Context, error) {
 		}
 	}
 
-	//hhhahhahaha
-	var conService *models.CFService
-	for _, service := range services {
-		if service.Name == "destination" {
-			conService = &service
-		}
-	}
-	servicePlans_con, err := clients.GetServicePlans(c.CliConnection, conService.GUID)
-	_ = servicePlans_con
-	_ = err
-	var appa, err2 = clients.GetServiceInstances(c.CliConnection, context.SpaceID, servicePlans_con)
-	//log.Tracef(err.Error())
-	_ = appa
-	_ = err2
-
-	var destService *models.CFService
-	for _, service := range services {
-		if service.Name == "connectivity" {
-			destService = &service
-			break
-		}
-	}
-	_ = destService
-
-	destService_con, err := clients.GetServicePlans(c.CliConnection, destService.GUID)
-	_ = destService_con
-
-	var appa2, err3 = clients.GetServiceInstances(c.CliConnection, context.SpaceID, destService_con)
-	//log.Tracef(err.Error())
-	_ = appa2
-	_ = err3
-
-	if err != nil {
-		return html5Context, errors.New("Could not get service instances for app-runtime plan: " + err.Error())
-	}
-
 	if html5AppsRepoService == nil {
 		return html5Context, errors.New(serviceName + " service is not in the list of available services")
 	}
@@ -200,7 +164,7 @@ func (c *HTML5Command) GetHTML5Context(context Context) (HTML5Context, error) {
 		}
 	}
 	if appRuntimeServicePlan == nil {
-		return html5Context, errors.New("Could not find app-runtime service plan")
+		return html5Context, errors.New("could not find app-runtime service plan")
 	}
 	html5Context.HTML5AppRuntimeServicePlan = appRuntimeServicePlan
 
@@ -352,22 +316,6 @@ func (ctx *HTML5Context) GetRuntimeURL(runtime string) string {
 		runtimeURL = "https://" + ctx.HTML5AppRuntimeServiceInstanceKey.Credentials.UAA.IdentityZone + "." + runtime + uri[strings.Index(uri, "."):]
 	}
 	return runtimeURL
-}
-
-// DestinationContext Destination context struct
-type DestinationContext struct {
-	// Pointer to destination service
-	DestinationService *models.CFService
-	// Pointer to 'lite' plan of destination service
-	DestinationServicePlan *models.CFServicePlan
-	// List of destination service instances
-	DestinationServiceInstances []models.CFServiceInstance
-	// Pointer to destination service instance created during context initialization
-	DestinationServiceInstance *models.CFServiceInstance
-	// Pointer to destination service key created during context initialization
-	DestinationServiceInstanceKey *models.CFServiceKey
-	// Access token of destination service key
-	DestinationServiceInstanceKeyToken string
 }
 
 type stringSlice []string

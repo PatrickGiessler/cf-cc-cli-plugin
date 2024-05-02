@@ -14,9 +14,7 @@ func GetFileMeta(serviceURL string, filePath string, accessToken string, appHost
 	var request *http.Request
 	var response *http.Response
 	var err error
-	var html5URL string
-
-	html5URL = serviceURL + filePath
+	html5URL := serviceURL + filePath
 
 	log.Tracef("Making HEAD request to: %s\n", html5URL)
 

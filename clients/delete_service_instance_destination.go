@@ -39,7 +39,7 @@ func DeleteServiceInstanceDestination(serviceURL string, accessToken string, des
 	if response.StatusCode > 201 {
 		body, err = io.ReadAll(response.Body)
 		if err != nil {
-			return fmt.Errorf("Could not delete destination: [%s] %+v", response.Status, body)
+			return fmt.Errorf("could not delete destination: [%s] %+v", response.Status, body)
 		}
 	}
 

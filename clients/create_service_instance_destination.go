@@ -51,7 +51,7 @@ func CreateServiceInstanceDestination(serviceURL string, accessToken string, des
 	}
 
 	if response.StatusCode > 201 {
-		return fmt.Errorf("Could not create destination: [%s] %+v", response.Status, body)
+		return fmt.Errorf("could not create destination: [%s] %+v", response.Status, body)
 	}
 
 	return nil

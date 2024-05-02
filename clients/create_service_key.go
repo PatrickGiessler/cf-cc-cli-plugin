@@ -76,7 +76,7 @@ func CreateServiceKey(cliConnection plugin.CliConnection, serviceInstanceGUID st
 	}
 
 	if response.StatusCode != 202 {
-		return nil, fmt.Errorf("Could not create service key: [%d] %s", response.StatusCode, string(body))
+		return nil, fmt.Errorf("could not create service key: [%d] %s", response.StatusCode, string(body))
 	}
 
 	// Pool job
@@ -87,7 +87,7 @@ func CreateServiceKey(cliConnection plugin.CliConnection, serviceInstanceGUID st
 
 	// Get link to service key from job
 	if link, ok = job.Links["service_credential_binding"]; !ok {
-		return nil, fmt.Errorf("Malformed job resource. No 'service_credential_binding' link: %+v", job)
+		return nil, fmt.Errorf("malformed job resource. No 'service_credential_binding' link: %+v", job)
 	}
 
 	// Get service key

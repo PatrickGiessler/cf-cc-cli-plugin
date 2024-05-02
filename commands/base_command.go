@@ -71,10 +71,10 @@ func (c *BaseCommand) GetContext() (Context, error) {
 func (c *BaseCommand) GetOrg() (plugin_models.Organization, error) {
 	org, err := c.CliConnection.GetCurrentOrg()
 	if err != nil {
-		return plugin_models.Organization{}, fmt.Errorf("Could not get current org: %s", err)
+		return plugin_models.Organization{}, fmt.Errorf("could not get current org: %s", err)
 	}
 	if org.Name == "" {
-		return plugin_models.Organization{}, fmt.Errorf("No org and space targeted, use '%s' to target an org and a space", terminal.CommandColor("cf target -o ORG -s SPACE"))
+		return plugin_models.Organization{}, fmt.Errorf("no org and space targeted, use '%s' to target an org and a space", terminal.CommandColor("cf target -o ORG -s SPACE"))
 	}
 	return org, nil
 }
@@ -83,11 +83,11 @@ func (c *BaseCommand) GetOrg() (plugin_models.Organization, error) {
 func (c *BaseCommand) GetSpace() (plugin_models.Space, error) {
 	space, err := c.CliConnection.GetCurrentSpace()
 	if err != nil {
-		return plugin_models.Space{}, fmt.Errorf("Could not get current space: %s", err)
+		return plugin_models.Space{}, fmt.Errorf("could not get current space: %s", err)
 	}
 
 	if space.Name == "" || space.Guid == "" {
-		return plugin_models.Space{}, fmt.Errorf("No space targeted, use '%s' to target a space", terminal.CommandColor("cf target -s"))
+		return plugin_models.Space{}, fmt.Errorf("no space targeted, use '%s' to target a space", terminal.CommandColor("cf target -s"))
 	}
 	return space, nil
 }
@@ -96,10 +96,10 @@ func (c *BaseCommand) GetSpace() (plugin_models.Space, error) {
 func (c *BaseCommand) GetUsername() (string, error) {
 	username, err := c.CliConnection.Username()
 	if err != nil {
-		return "", fmt.Errorf("Could not get username: %s", err)
+		return "", fmt.Errorf("could not get username: %s", err)
 	}
 	if username == "" {
-		return "", fmt.Errorf("Not logged in. Use '%s' to log in", terminal.CommandColor("cf login"))
+		return "", fmt.Errorf("not logged in. Use '%s' to log in", terminal.CommandColor("cf login"))
 	}
 	return username, nil
 }

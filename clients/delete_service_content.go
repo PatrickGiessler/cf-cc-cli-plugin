@@ -12,9 +12,7 @@ func DeleteServiceContent(serviceURL string, accessToken string) error {
 	var request *http.Request
 	var response *http.Response
 	var err error
-	var html5URL string
-
-	html5URL = serviceURL + "/applications/content"
+	html5URL := serviceURL + "/applications/content"
 
 	log.Tracef("Making request to: %s\n", html5URL)
 

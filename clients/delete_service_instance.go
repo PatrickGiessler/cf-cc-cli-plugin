@@ -62,7 +62,7 @@ func DeleteServiceInstance(cliConnection plugin.CliConnection, serviceInstanceGU
 			if currentTry != maxRetryCount {
 				continue
 			}
-			return fmt.Errorf("Could not delete service instance: [%d] %s", response.StatusCode, string(body[:]))
+			return fmt.Errorf("could not delete service instance: [%d] %s", response.StatusCode, string(body[:]))
 		} else {
 			// Pool job
 			_, err = PollJob(cliConnection, response.Header.Get("Location"))

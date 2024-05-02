@@ -60,7 +60,7 @@ func GetServiceKeyDetails(cliConnection plugin.CliConnection, serviceKeyGUID str
 
 	// Failed to get service key details
 	if response.StatusCode != 200 {
-		return serviceKey.Credentials, fmt.Errorf("Failed to get service key details: [%d] %+v", response.StatusCode, body)
+		return serviceKey.Credentials, fmt.Errorf("failed to get service key details: [%d] %+v", response.StatusCode, body)
 	}
 
 	// Unmarshal JSON

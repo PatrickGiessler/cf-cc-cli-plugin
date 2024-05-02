@@ -16,9 +16,8 @@ func GetApplication(cliConnection plugin.CliConnection, spaceGUID string, appNam
 	var responseObject models.CFResponse
 	var responseStrings []string
 	var err error
-	var url string
 
-	url = "/v3/apps?names=" + appName
+	url := "/v3/apps?names=" + appName
 
 	log.Tracef("Making request to: %s\n", url)
 	responseStrings, err = cliConnection.CliCommandWithoutTerminalOutput("curl", url)
@@ -34,7 +33,7 @@ func GetApplication(cliConnection plugin.CliConnection, spaceGUID string, appNam
 	if len(responseObject.Resources) > 0 {
 		log.Tracef("Number of applications with name %s: %d\n", appName, len(responseObject.Resources))
 	} else {
-		return nil, fmt.Errorf("Application with name %s does not exist in current organization and space", appName)
+		return nil, fmt.Errorf("application with name %s does not exist in current organization and space", appName)
 	}
 	application = &models.CFApplication{GUID: responseObject.Resources[0].GUID, Name: responseObject.Resources[0].Name}
 
